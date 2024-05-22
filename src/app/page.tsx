@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useAccount } from 'wagmi'
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS } from "@/utils/common.variable";
-import { ABI } from "@/config/contract";
 import { type UseAccountReturnType } from 'wagmi'
 import { signMessage } from '@wagmi/core';
 import { http, createConfig } from 'wagmi'
