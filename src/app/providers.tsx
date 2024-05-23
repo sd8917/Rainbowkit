@@ -104,7 +104,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 learnMoreUrl: 'https://learnaboutcryptowallets.example',
                 disclaimer: Disclaimer,
               }}
-              
+              showRecentTransactions={true}
           >
                 {children}
           </RainbowKitProvider>
