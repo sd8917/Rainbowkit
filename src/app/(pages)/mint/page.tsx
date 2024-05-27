@@ -1,10 +1,9 @@
 'use client';
+
 import { formatUnits, parseUnits } from 'viem';
 import { GOLD_TOKE_ABI } from '@/config/contract';
 import { CONTRACT_ADDRESS } from '@/utils/common.variable';
 import React, { useEffect, useState } from 'react';
-import { http, createConfig, useToken } from 'wagmi';
-import { mainnet, sepolia } from 'wagmi/chains';
 import { useReadContract } from 'wagmi';
 import {
   type BaseError,
@@ -12,20 +11,15 @@ import {
   useWriteContract
 } from 'wagmi';
 
-const config = createConfig({
-  chains: [mainnet, sepolia],
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-  },
-});
 
 export default function Mint() {
 
    /** State Variables... */
-   const [decimals, setDecimals] = useState<string>('18');
+   const [decimals, setDecimals] = useState<string>('8');
 
-  const result = useReadContract({
+  
+   /** Reading decimals */
+  const decimalResult = useReadContract({
     abi: GOLD_TOKE_ABI,
     address: CONTRACT_ADDRESS,
     functionName: 'decimals',
@@ -35,10 +29,9 @@ export default function Mint() {
     isError: boolean;
     error: Error | null;
   };
-  console.log('result 12 ', result.data)
 
   
-  /** Fetching the Contract READ */
+  /** Fetching the Contract Detail READ */
   const { isLoading, data, isError, error } = useReadContract({
     abi: GOLD_TOKE_ABI,
     address: CONTRACT_ADDRESS,
@@ -57,7 +50,6 @@ export default function Mint() {
   if (dataBigInt !== undefined) {
     // Convert BigInt to a string and then format it
     totalTokenSupply = formatUnits(BigInt(dataBigInt.toString()),parseInt(decimals) );
-
   }
 
   /** Minting the Contract Write */
@@ -69,6 +61,7 @@ export default function Mint() {
   } = useWriteContract()
 
  
+  /**On click of mint */
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.target as HTMLFormElement)
@@ -76,10 +69,7 @@ export default function Mint() {
     const address = formData.get('address') as string;
 
     //Find decimal 
-
-    const amountParsed = parseUnits(amount, 18);
-    console.log("amountInWei ", amountParsed);
-
+    const amountParsed = parseUnits(amount, Number(decimals));
     writeContract({
       address: CONTRACT_ADDRESS,
       abi: GOLD_TOKE_ABI,
@@ -94,11 +84,11 @@ export default function Mint() {
     })
 
     useEffect(()=>{
-      if(result.data){
-        setDecimals(result.data.toString());
+      if(decimalResult.data){
+        setDecimals(decimalResult.data.toString());
       }
       
-    },[decimals,isPending])
+    },[decimalResult.data, isPending])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -130,7 +120,7 @@ export default function Mint() {
             {isConfirming && <div className='text-white bg-orange-600 mt-2 rounded-lg p-2'>Waiting for confirmation...</div>}
             {isConfirmed && <div className='text-white bg-green-600 mt-2 rounded-lg p-2'>Transaction confirmed.</div>}
             {contractError && (
-              <div>Error: {(error as BaseError).shortMessage || contractError.message}</div>
+              <div className="text-white bg-red-600 mt-2 rounded-lg p-2">Error: {(contractError as BaseError).shortMessage || contractError.message}</div>
             )}
           </form>
 
